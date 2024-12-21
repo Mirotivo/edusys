@@ -1,3 +1,6 @@
 [submodule "Backend"]
 	path = Backend
 	url = https://github.com/mirotivo/edusys.backend.git
+[submodule "Frontend.Angular"]
+	path = Frontend.Angular
+	url = https://github.com/mirotivo/edusys.frontend.git
