@@ -1,0 +1,11 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'backend-container'
+    scheme: https
+    static_configs:
+      - targets: ['backend-container']
+    tls_config:
+      # Skip SSL certificate verification (for self-signed certificates)
+      insecure_skip_verify: true
