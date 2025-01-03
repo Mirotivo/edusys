@@ -1,0 +1,63 @@
+name: .NET Core CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checkout the code along with submodules
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive  # Ensure submodules are initialized and checked out
+
+    - name: Set environment variables from GitHub secrets
+      run: |
+        echo "Skillseek__App__Name=${{ secrets.Skillseek__App__Name }}" >> $GITHUB_ENV
+        echo "Skillseek__App__BaseUrl=${{ secrets.Skillseek__App__BaseUrl }}" >> $GITHUB_ENV
+        echo "Skillseek__App__FrontEndUrl=${{ secrets.Skillseek__App__FrontEndUrl }}" >> $GITHUB_ENV
+        echo "Skillseek__App__SupportEmail=${{ secrets.Skillseek__App__SupportEmail }}" >> $GITHUB_ENV
+        echo "Skillseek__App__SupportPhone=${{ secrets.Skillseek__App__SupportPhone }}" >> $GITHUB_ENV
+        echo "Skillseek__Jwt__Key=${{ secrets.Skillseek__Jwt__Key }}" >> $GITHUB_ENV
+        echo "Skillseek__Payments__Stripe__ApiKey=${{ secrets.Skillseek__Payments__Stripe__ApiKey }}" >> $GITHUB_ENV
+        echo "Skillseek__Payments__Stripe__SecretKey=${{ secrets.Skillseek__Payments__Stripe__SecretKey }}" >> $GITHUB_ENV
+        echo "Skillseek__Payments__Stripe__PublishableKey=${{ secrets.Skillseek__Payments__Stripe__PublishableKey }}" >> $GITHUB_ENV
+        echo "Skillseek__Payments__PayPal__ClientId=${{ secrets.Skillseek__Payments__PayPal__ClientId }}" >> $GITHUB_ENV
+        echo "Skillseek__Payments__PayPal__ClientSecret=${{ secrets.Skillseek__Payments__PayPal__ClientSecret }}" >> $GITHUB_ENV
+        echo "Skillseek__Notifications__SendGrid__ApiKey=${{ secrets.Skillseek__Notifications__SendGrid__ApiKey }}" >> $GITHUB_ENV
+        echo "Skillseek__Notifications__SendGrid__FromEmail=${{ secrets.Skillseek__Notifications__SendGrid__FromEmail }}" >> $GITHUB_ENV
+        echo "Skillseek__Notifications__SendGrid__FromName=${{ secrets.Skillseek__Notifications__SendGrid__FromName }}" >> $GITHUB_ENV
+        echo "Skillseek__Notifications__Twilio__AccountSid=${{ secrets.Skillseek__Notifications__Twilio__AccountSid }}" >> $GITHUB_ENV
+        echo "Skillseek__Notifications__Twilio__AuthToken=${{ secrets.Skillseek__Notifications__Twilio__AuthToken }}" >> $GITHUB_ENV
+        echo "Skillseek__Notifications__Twilio__FromPhoneNumber=${{ secrets.Skillseek__Notifications__Twilio__FromPhoneNumber }}" >> $GITHUB_ENV
+        echo "Skillseek__ExternalServices__Google__ApiKey=${{ secrets.Skillseek__ExternalServices__Google__ApiKey }}" >> $GITHUB_ENV
+        echo "Skillseek__ExternalServices__Google__ClientId=${{ secrets.Skillseek__ExternalServices__Google__ClientId }}" >> $GITHUB_ENV
+        echo "Skillseek__ExternalServices__Google__ClientSecret=${{ secrets.Skillseek__ExternalServices__Google__ClientSecret }}" >> $GITHUB_ENV
+        echo "Skillseek__ExternalServices__Facebook__AppId=${{ secrets.Skillseek__ExternalServices__Facebook__AppId }}" >> $GITHUB_ENV
+        echo "Skillseek__ExternalServices__Facebook__AppSecret=${{ secrets.Skillseek__ExternalServices__Facebook__AppSecret }}" >> $GITHUB_ENV
+      
+    # Set up .NET environment
+    - name: Set up .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '8.0.x'
+
+    # Restore dependencies
+    - name: Restore dependencies
+      run: dotnet restore ./skillseek.sln
+
+    # Build the solution
+    - name: Build the project
+      run: dotnet build ./skillseek.sln --configuration Release
+
+    # Run tests
+    - name: Run tests
+      run: dotnet test ./Backend.Tests/Backend.Tests.csproj --configuration Release --no-build --verbosity normal
