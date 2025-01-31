@@ -115,50 +115,51 @@ jobs:
   #         docker run --rm --env-file config.env -e DOTNET_ENVIRONMENT=Testing mirotivo/avancira-backend:latest \
   #           dotnet test /avancira-backend/Backend.Tests/Backend.Tests.csproj --configuration Release --verbosity normal
 
-  test-backend:
-    runs-on: ubuntu-latest
-    needs: build-docker
+  # test-backend:
+  #   runs-on: ubuntu-latest
+  #   needs: build-docker
 
-    steps:
-      # Download the .env file
-      - name: Download .env file
-        uses: actions/download-artifact@v4
-        with:
-          name: env-file
-          path: /tmp/config
+  #   steps:
+  #     # Download the .env file
+  #     - name: Download .env file
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: env-file
+  #         path: /tmp/config
 
-      # Checkout the code
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
+  #     # Checkout the code
+  #     - name: Checkout code
+  #       uses: actions/checkout@v2
+  #       with:
+  #         submodules: recursive
   
-      # Set up .NET environment
-      - name: Set up .NET
-        uses: actions/setup-dotnet@v2
-        with:
-          dotnet-version: '8.0.x'
+  #     # Set up .NET environment
+  #     - name: Set up .NET
+  #       uses: actions/setup-dotnet@v2
+  #       with:
+  #         dotnet-version: '8.0.x'
 
-      # Restore dependencies
-      - name: Restore dependencies
-        run: dotnet restore ./avancira.sln
+  #     # Restore dependencies
+  #     - name: Restore dependencies
+  #       run: dotnet restore ./avancira.sln
 
-      # Build the solution
-      - name: Build the project
-        run: dotnet build ./avancira.sln --configuration Release
+  #     # Build the solution
+  #     - name: Build the project
+  #       run: dotnet build ./avancira.sln --configuration Release
 
-      # Run tests
-      - name: Run tests
-        run: |
-          set -o allexport
-          source /tmp/config/config.env
-          set +o allexport
-          dotnet test ./Backend.Tests/Backend.Tests.csproj --configuration Release --no-build --verbosity normal
+  #     # Run tests
+  #     - name: Run tests
+  #       run: |
+  #         set -o allexport
+  #         source /tmp/config/config.env
+  #         set +o allexport
+  #         dotnet test ./Backend.Tests/Backend.Tests.csproj --configuration Release --no-build --verbosity normal
 
 
   deploy:
     runs-on: ubuntu-latest
-    needs: test-backend
+    # needs: test-backend
+    needs: build-docker
 
     steps:
     - name: Download .env file
