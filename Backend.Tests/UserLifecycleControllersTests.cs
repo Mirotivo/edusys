@@ -267,7 +267,7 @@ namespace Backend.Tests
             {
                 FirstName = "Test",
                 LastName = "Tutor",
-                Phone = "123-456-7890",
+                PhoneNumber = "123-456-7890",
                 Address = "123 Updated Street",
                 SkypeId = "updated.skype@example.com"
             });
