@@ -1,0 +1,137 @@
+services:
+  # PostgreSQL Database container
+  postgresql:
+    container_name: postgresql
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: ${Avancira__Database__User}
+      POSTGRES_PASSWORD: ${Avancira__Database__Password}
+      POSTGRES_DB: ${Avancira__Database__Name}
+    volumes:
+      - ${PWD}/postgresql:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - avancira-network
+    restart: always
+
+  loki:
+    container_name: loki
+    depends_on:
+      - postgresql
+    image: grafana/loki:2.4.1
+    environment:
+      - LOKI_PORT=3100
+    volumes:
+      - ./loki.yaml:/etc/loki/loki.yaml
+      - ./loki/chunks:/loki/chunks
+      - ./loki/index:/loki/index
+    command: -config.file=/etc/loki/loki.yaml
+    ports:
+      - "3100:3100"
+    networks:
+      - avancira-network
+    restart: always
+
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "7070:9090"
+    networks:
+      - avancira-network
+    restart: always
+
+  # Grafana container for monitoring
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:latest
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana/dashboards:/etc/grafana/dashboards
+    ports:
+      - "3000:3000"
+    networks:
+      - avancira-network
+    restart: always
+
+  # Backend service container
+  backend-container:
+    container_name: backend-container
+    image: mirotivo/avancira-backend-container:latest
+    build:
+      context: ./Backend
+    environment:
+      # App Configuration
+      - Avancira__App__Name=${Avancira__App__Name}
+      - Avancira__App__BaseUrl=${Avancira__App__BaseUrl}
+      - Avancira__App__FrontEndUrl=${Avancira__App__FrontEndUrl}
+      - Avancira__App__SupportEmail=${Avancira__App__SupportEmail}
+      - Avancira__App__SupportPhone=${Avancira__App__SupportPhone}
+      # JWT secrets
+      - Avancira__Jwt__Key=${Avancira__Jwt__Key}
+      - Avancira__Jwt__Issuer=${Avancira__Jwt__Issuer}
+      - Avancira__Jwt__Audience=${Avancira__Jwt__Audience}
+      # Payments secrets (Stripe and PayPal)
+      - Avancira__Payments__Stripe__ApiKey=${Avancira__Payments__Stripe__ApiKey}
+      - Avancira__Payments__Stripe__SecretKey=${Avancira__Payments__Stripe__SecretKey}
+      - Avancira__Payments__Stripe__PublishableKey=${Avancira__Payments__Stripe__PublishableKey}
+      - Avancira__Payments__Paypal__Environment=${Avancira__Payments__Paypal__Environment}
+      - Avancira__Payments__Paypal__ClientId=${Avancira__Payments__Paypal__ClientId}
+      - Avancira__Payments__Paypal__ClientSecret=${Avancira__Payments__Paypal__ClientSecret}
+      # Notifications (SendGrid and Twilio)
+      - Avancira__Notifications__Email__FromEmail=${Avancira__Notifications__Email__FromEmail}
+      - Avancira__Notifications__Email__FromName=${Avancira__Notifications__Email__FromName}
+      - Avancira__Notifications__Smtp__SmtpHost=${Avancira__Notifications__Smtp__SmtpHost}
+      - Avancira__Notifications__Smtp__SmtpPort=${Avancira__Notifications__Smtp__SmtpPort}
+      - Avancira__Notifications__GraphApi__TenantId=${Avancira__Notifications__GraphApi__TenantId}
+      - Avancira__Notifications__GraphApi__ClientId=${Avancira__Notifications__GraphApi__ClientId}
+      - Avancira__Notifications__GraphApi__ClientSecret=${Avancira__Notifications__GraphApi__ClientSecret}
+      - Avancira__Notifications__Sendgrid__ApiKey=${Avancira__Notifications__Sendgrid__ApiKey}
+      - Avancira__Notifications__Twilio__AccountSid=${Avancira__Notifications__Twilio__AccountSid}
+      - Avancira__Notifications__Twilio__AuthToken=${Avancira__Notifications__Twilio__AuthToken}
+      - Avancira__Notifications__Twilio__FromPhoneNumber=${Avancira__Notifications__Twilio__FromPhoneNumber}
+      # Jitsi secrets
+      - Avancira__Jitsi__Domain=${Avancira__Jitsi__Domain}
+      - Avancira__Jitsi__AppId=${Avancira__Jitsi__AppId}
+      - Avancira__Jitsi__AppSecret=${Avancira__Jitsi__AppSecret}
+      # Google secrets
+      - Avancira__ExternalServices__Google__ApiKey=${Avancira__ExternalServices__Google__ApiKey}
+      - Avancira__ExternalServices__Google__ClientId=${Avancira__ExternalServices__Google__ClientId}
+      - Avancira__ExternalServices__Google__ClientSecret=${Avancira__ExternalServices__Google__ClientSecret}
+      # Facebook secrets
+      - Avancira__ExternalServices__Facebook__AppId=${Avancira__ExternalServices__Facebook__AppId}
+      - Avancira__ExternalServices__Facebook__AppSecret=${Avancira__ExternalServices__Facebook__AppSecret}
+    volumes:
+      - ${PWD}/Database:/avancira-backend/Database
+      - ${PWD}/wwwroot:/avancira-backend/wwwroot
+    ports:
+      - "9090:8080"
+      - "9000:443"
+    networks:
+      - avancira-network
+    restart: unless-stopped
+
+  # Frontend container
+  frontend-container:
+    container_name: frontend-container
+    depends_on:
+      - backend-container
+    image: mirotivo/avancira-frontend-container:latest
+    build:
+      context: ./Frontend.Angular
+    ports:
+      - "8080:80"
+      - "8000:443"
+    networks:
+      - avancira-network
+    restart: unless-stopped
+
+networks:
+  avancira-network:
+    driver: bridge

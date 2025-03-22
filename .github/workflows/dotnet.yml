@@ -1,0 +1,213 @@
+name: .NET Core CI/CD
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Create .env file with environment variables
+    - name: Create .env file
+      run: |
+        echo "Avancira__Database__Sqlite__Path=${{ secrets.Avancira__Database__Sqlite__Path }}" >> config.env
+        echo "Avancira__Database__Host=${{ secrets.Avancira__Database__Host }}" >> config.env
+        echo "Avancira__Database__Port=${{ secrets.Avancira__Database__Port }}" >> config.env
+        echo "Avancira__Database__Name=${{ secrets.Avancira__Database__Name }}" >> config.env
+        echo "Avancira__Database__User=${{ secrets.Avancira__Database__User }}" >> config.env
+        echo "Avancira__Database__Password=${{ secrets.Avancira__Database__Password }}" >> config.env
+        echo "Avancira__App__Name='${{ secrets.Avancira__App__Name }}'" >> config.env
+        echo "Avancira__App__BaseUrl=${{ secrets.Avancira__App__BaseUrl }}" >> config.env
+        echo "Avancira__App__FrontEndUrl=${{ secrets.Avancira__App__FrontEndUrl }}" >> config.env
+        echo "Avancira__App__SupportEmail=${{ secrets.Avancira__App__SupportEmail }}" >> config.env
+        echo "Avancira__App__SupportPhone=${{ secrets.Avancira__App__SupportPhone }}" >> config.env
+        echo "Avancira__Jwt__Key=${{ secrets.Avancira__Jwt__Key }}" >> config.env
+        echo "Avancira__Jwt__Issuer=${{ secrets.Avancira__Jwt__Issuer }}" >> config.env
+        echo "Avancira__Jwt__Audience=${{ secrets.Avancira__Jwt__Audience }}" >> config.env
+        echo "Avancira__Payments__Stripe__ApiKey=${{ secrets.Avancira__Payments__Stripe__ApiKey }}" >> config.env
+        echo "Avancira__Payments__Stripe__SecretKey=${{ secrets.Avancira__Payments__Stripe__SecretKey }}" >> config.env
+        echo "Avancira__Payments__Stripe__PublishableKey=${{ secrets.Avancira__Payments__Stripe__PublishableKey }}" >> config.env
+        echo "Avancira__Payments__Paypal__Environment=${{ secrets.Avancira__Payments__Paypal__Environment }}" >> config.env
+        echo "Avancira__Payments__Paypal__ClientId=${{ secrets.Avancira__Payments__Paypal__ClientId }}" >> config.env
+        echo "Avancira__Payments__Paypal__ClientSecret=${{ secrets.Avancira__Payments__Paypal__ClientSecret }}" >> config.env
+        echo "Avancira__Notifications__Email__FromEmail=${{ secrets.Avancira__Notifications__Email__FromEmail }}" >> config.env
+        echo "Avancira__Notifications__Email__FromName='${{ secrets.Avancira__Notifications__Email__FromName }}'" >> config.env
+        echo "Avancira__Notifications__Smtp__SmtpHost=${{ secrets.Avancira__Notifications__Smtp__SmtpHost }}" >> config.env
+        echo "Avancira__Notifications__Smtp__SmtpPort=${{ secrets.Avancira__Notifications__Smtp__SmtpPort }}" >> config.env
+        echo "Avancira__Notifications__GraphApi__TenantId=${{ secrets.Avancira__Notifications__GraphApi__TenantId }}" >> config.env
+        echo "Avancira__Notifications__GraphApi__ClientId=${{ secrets.Avancira__Notifications__GraphApi__ClientId }}" >> config.env
+        echo "Avancira__Notifications__GraphApi__ClientSecret=${{ secrets.Avancira__Notifications__GraphApi__ClientSecret }}" >> config.env
+        echo "Avancira__Notifications__Sendgrid__ApiKey=${{ secrets.Avancira__Notifications__Sendgrid__ApiKey }}" >> config.env
+        echo "Avancira__Notifications__Twilio__AccountSid=${{ secrets.Avancira__Notifications__Twilio__AccountSid }}" >> config.env
+        echo "Avancira__Notifications__Twilio__AuthToken=${{ secrets.Avancira__Notifications__Twilio__AuthToken }}" >> config.env
+        echo "Avancira__Notifications__Twilio__FromPhoneNumber=${{ secrets.Avancira__Notifications__Twilio__FromPhoneNumber }}" >> config.env
+        echo "Avancira__Jitsi__Domain=${{ secrets.Avancira__Jitsi__Domain }}" >> config.env
+        echo "Avancira__Jitsi__AppId=${{ secrets.Avancira__Jitsi__AppId }}" >> config.env
+        echo "Avancira__Jitsi__AppSecret=${{ secrets.Avancira__Jitsi__AppSecret }}" >> config.env
+        echo "Avancira__ExternalServices__Google__ApiKey=${{ secrets.Avancira__ExternalServices__Google__ApiKey }}" >> config.env
+        echo "Avancira__ExternalServices__Google__ClientId=${{ secrets.Avancira__ExternalServices__Google__ClientId }}" >> config.env
+        echo "Avancira__ExternalServices__Google__ClientSecret=${{ secrets.Avancira__ExternalServices__Google__ClientSecret }}" >> config.env
+        echo "Avancira__ExternalServices__Facebook__AppId=${{ secrets.Avancira__ExternalServices__Facebook__AppId }}" >> config.env
+        echo "Avancira__ExternalServices__Facebook__AppSecret=${{ secrets.Avancira__ExternalServices__Facebook__AppSecret }}" >> config.env
+
+    # Upload the .env file
+    - name: Upload .env file
+      uses: actions/upload-artifact@v4
+      with:
+        name: env-file
+        path: config.env
+
+  build-docker:
+    runs-on: ubuntu-latest
+    needs: setup
+
+    steps:
+    # Checkout the code
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+
+    # Log in to Docker Hub
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    # Build and push backend Docker image
+    - name: Build and push backend Docker image
+      run: |
+        cd Backend
+        docker build -t "mirotivo/avancira-backend:latest" .
+        docker push "mirotivo/avancira-backend:latest"
+  
+    # # Build and push frontend Docker image
+    # - name: Build and push frontend Docker image
+    #   run: |
+    #     cd Frontend.Angular
+    #     docker build -t "mirotivo/avancira-frontend:latest" .
+    #     docker push "mirotivo/avancira-frontend:latest"
+
+  # test-backend:
+  #   runs-on: ubuntu-latest
+  #   needs: build-docker
+
+  #   steps:
+  #     - name: Download .env file
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: env-file
+
+  #     # Pull the backend image
+  #     - name: Pull backend Docker image
+  #       run: docker pull mirotivo/avancira-backend:latest
+
+  #     # Run backend tests inside the Docker container
+  #     - name: Run backend tests
+  #       run: |
+  #         docker run --rm --env-file config.env -e DOTNET_ENVIRONMENT=Testing mirotivo/avancira-backend:latest \
+  #           dotnet test /avancira-backend/Backend.Tests/Backend.Tests.csproj --configuration Release --verbosity normal
+
+  # test-backend:
+  #   runs-on: ubuntu-latest
+  #   needs: build-docker
+
+  #   steps:
+  #     # Download the .env file
+  #     - name: Download .env file
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: env-file
+  #         path: /tmp/config
+
+  #     # Checkout the code
+  #     - name: Checkout code
+  #       uses: actions/checkout@v2
+  #       with:
+  #         submodules: recursive
+  
+  #     # Set up .NET environment
+  #     - name: Set up .NET
+  #       uses: actions/setup-dotnet@v2
+  #       with:
+  #         dotnet-version: '8.0.x'
+
+  #     # Restore dependencies
+  #     - name: Restore dependencies
+  #       run: dotnet restore ./avancira.sln
+
+  #     # Build the solution
+  #     - name: Build the project
+  #       run: dotnet build ./avancira.sln --configuration Release
+
+  #     # Run tests
+  #     - name: Run tests
+  #       run: |
+  #         set -o allexport
+  #         source /tmp/config/config.env
+  #         set +o allexport
+  #         dotnet test ./Backend.Tests/Backend.Tests.csproj --configuration Release --no-build --verbosity normal
+
+
+  deploy:
+    runs-on: ubuntu-latest
+    # needs: test-backend
+    needs: build-docker
+
+    steps:
+    - name: Download .env file
+      uses: actions/download-artifact@v4
+      with:
+        name: env-file
+        path: /tmp/config
+
+    - name: cp .env file
+      run: |
+        cp /tmp/config/config.env config.env
+  
+    - name: Upload .env file to the remote server
+      uses: appleboy/scp-action@v0.1.0
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USER }}
+        password: ${{ secrets.SERVER_PASSWORD }}
+        port: 22
+        source: "config.env"
+        target: ~/
+        overwrite: true
+    
+    # SSH into the server and deploy the backend container
+    - name: Deploy backend to server
+      uses: appleboy/ssh-action@v0.1.5
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USER }}
+        password: ${{ secrets.SERVER_PASSWORD }}
+        port: 22
+        script: |
+          docker pull mirotivo/avancira-backend:latest
+          docker stop avancira-backend-container || true
+          docker rm avancira-backend-container || true
+          docker run -d --restart always -p 9000:8080 -v ${PWD}/Database:/avancira-backend/Database -v ${PWD}/wwwroot:/avancira-backend/wwwroot --env-file ~/config.env \
+            --name avancira-backend-container --network avancira-network mirotivo/avancira-backend:latest
+
+    # # SSH into the server and deploy the frontend container
+    # - name: Deploy frontend to server
+    #   uses: appleboy/ssh-action@v0.1.5
+    #   with:
+    #     host: ${{ secrets.SERVER_HOST }}
+    #     username: ${{ secrets.SERVER_USER }}
+    #     password: ${{ secrets.SERVER_PASSWORD }}
+    #     port: 22
+    #     script: |
+    #       docker pull mirotivo/avancira-frontend:latest
+    #       docker stop avancira-frontend-container || true
+    #       docker rm avancira-frontend-container || true
+    #       docker run -d -p 8000:80 --name avancira-frontend-container --network avancira-network mirotivo/avancira-frontend:latest
