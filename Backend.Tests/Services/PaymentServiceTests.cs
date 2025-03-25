@@ -72,30 +72,30 @@ namespace Backend.Tests.Services
                     ApprovalUrl = "https://example.com/approval",
                     Status = PaymentResultStatus.Completed
                 });
-            _mockStripePaymentGateway
-                .Setup(gateway => gateway.CapturePaymentAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<decimal>(), It.IsAny<string>()))
-                .ReturnsAsync((string paymentId, string stripeCustomerId, decimal amount, string description) =>
-                {
-                    // Mock logic for testing
-                    if (amount > 0)
-                    {
-                        return new PaymentResult
-                        {
-                            PaymentId = "charge_123",
-                            ApprovalUrl = null, // Not needed for direct charge payments
-                            Status = PaymentResultStatus.Completed
-                        };
-                    }
-                    else
-                    {
-                        return new PaymentResult
-                        {
-                            PaymentId = null,
-                            ApprovalUrl = null,
-                            Status = PaymentResultStatus.Failed
-                        };
-                    }
-                });
+            //_mockStripePaymentGateway
+            //    .Setup(gateway => gateway.CapturePaymentAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<decimal>(), It.IsAny<string>()))
+            //    .ReturnsAsync((string paymentId, string stripeCustomerId, decimal amount, string description) =>
+            //    {
+            //        // Mock logic for testing
+            //        if (amount > 0)
+            //        {
+            //            return new PaymentResult
+            //            {
+            //                PaymentId = "charge_123",
+            //                ApprovalUrl = null, // Not needed for direct charge payments
+            //                Status = PaymentResultStatus.Completed
+            //            };
+            //        }
+            //        else
+            //        {
+            //            return new PaymentResult
+            //            {
+            //                PaymentId = null,
+            //                ApprovalUrl = null,
+            //                Status = PaymentResultStatus.Failed
+            //            };
+            //        }
+            //    });
 
 
             // Create mock of PaymentGatewayFactory

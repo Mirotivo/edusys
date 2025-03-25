@@ -34,9 +34,9 @@ namespace Backend.Tests.Services
             var listing = new Listing
             {
                 Id = 100,
-                LessonCategoryId = lessonCategory.Id,
+                //LessonCategoryId = lessonCategory.Id,
                 UserId = "2",
-                Title = "Math Tutor Listing"
+                Name = "Math Tutor Listing"
             };
             _dbContext.Listings.Add(listing);
             _dbContext.SaveChanges();  // Ensure Listing is saved
