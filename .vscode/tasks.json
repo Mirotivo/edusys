@@ -1,0 +1,60 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "delete database",
+            "type": "shell",
+            "command": "node delete-database.js",
+            "problemMatcher": []
+        },
+        {
+            "label": "build backend",
+            "type": "process",
+            "command": "dotnet",
+            "args": [
+                "build",
+                "${workspaceFolder}/Backend/Backend.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile",
+            "dependsOn": "delete file"
+        },
+        {
+            "label": "build frontend",
+            "type": "shell",
+            "options": {
+                "cwd": "${workspaceFolder}/Frontend.Angular"
+            },
+            "command": "ng",
+            "args": [
+                "serve",
+                "--ssl"
+            ]
+        },
+        {
+            "label": "publish",
+            "type": "process",
+            "command": "dotnet",
+            "args": [
+                "publish",
+                "${workspaceFolder}/Backend/Backend.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "watch",
+            "type": "process",
+            "command": "dotnet",
+            "args": [
+                "watch",
+                "run",
+                "--project",
+                "${workspaceFolder}/Backend/Backend.csproj"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+    ]
+}

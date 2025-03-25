@@ -1,0 +1,47 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": ".NET Core Launch (Backend)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build backend",
+            "program": "${workspaceFolder}/Backend/bin/Debug/net8.0/Backend.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/Backend",
+            "stopAtEntry": false,
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+            },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "sourceFileMap": {
+                "/Views": "${workspaceFolder}/Views"
+            }
+        },
+        {
+            "name": ".NET Core Launch (Frontend Angular)",
+            "type": "chrome",
+            "request": "launch",
+            "preLaunchTask": "build frontend",
+            "url": "http://localhost:4200",
+            "webRoot": "${workspaceFolder}/src"
+        },
+        {
+            "name": ".NET Core Attach",
+            "type": "coreclr",
+            "request": "attach"
+        },
+    ],
+    "compounds": [
+        {
+            "name": "Backend and Frontend",
+            "configurations": [".NET Core Launch (Backend)", ".NET Core Launch (Frontend Angular)"]
+          }  
+      ]
+}

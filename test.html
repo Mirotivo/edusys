@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+    <form id="payment-form">
+        <div id="card-number"></div>
+        <div id="card-expiry"></div>
+        <div id="card-cvc"></div>
+        <button id="submit">Submit</button>
+    </form>
+    <div>
+        <p>Token:</p>
+        <input type="text" id="resultField" readonly />
+    </div>
+
+    <script>
+        let stripe = Stripe('');
+        let elements = stripe.elements();
+        let cardNumber = elements.create('cardNumber');
+        let cardExpiry = elements.create('cardExpiry');
+        let cardCvc = elements.create('cardCvc');
+        cardNumber.mount('#card-number');
+        cardExpiry.mount('#card-expiry');
+        cardCvc.mount('#card-cvc');
+        
+        document.querySelector('#submit').addEventListener('click', async (event) => {
+            event.preventDefault();
+            const { token, error } = await stripe.createToken(cardNumber);
+            if (error) {
+                console.error('Error:', error);
+                alert('Error: ' + error.message);
+            } else {
+                console.log('Token:', token);
+                document.querySelector('#resultField').value = token.id;
+            }
+        });
+    </script>
+</body>
+</html>
